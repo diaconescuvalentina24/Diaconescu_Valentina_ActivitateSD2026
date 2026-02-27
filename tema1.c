@@ -143,9 +143,58 @@ float calculeazaPretMediu(Nod* cap) {
 	return 0;
 }
 
-void stergeMasiniDinSeria(/*lista masini*/ char serieCautata) {
-	//sterge toate masinile din lista care au seria primita ca parametru.
-	//tratati situatia ca masina se afla si pe prima pozitie, si pe ultima pozitie
+void stergeMasiniDinSeria(Nod* *cap, char serieCautata) {
+	//stergem toate nodurile de la inceputul listei
+	//cat timp lista nu este goala si primul nod are seria cautata
+	while ((*cap) && (*cap)->info.serie == serieCautata) {
+		Nod* aux = *cap;	//salvam adresa nodului care trebuie sters
+		(*cap) = aux->next;	//mutam capul listei la urmatorul nod
+
+		if (aux->info.numeSofer) {
+			free(aux->info.numeSofer); //eliberam memoria din heap pt nume sofer
+		}
+
+		if (aux->info.model) {
+			free(aux->info.model); //eliberam memoria din heap pt model
+		}
+		free(aux); //eliberam nodul 
+	}
+	//daca dupa stergerile de la inceput lista nu este goala
+	//continuam cautarea in restul listei
+	if ((*cap)) {
+
+		Nod* p = *cap; //pointer de parcurgere
+
+		while (p) {
+
+			//parcurgem pana gasim un nod al carui next are seria cautata
+			while (p->next && p->next->info.serie != serieCautata) {
+				p = p->next;
+			}
+
+			//daca exista un nod urmator care trebuie sters
+			if (p->next) {
+
+				Nod* aux = p->next; //salvam nodul de sters
+				p->next = aux->next; //refacem legatura peste nodul sters
+
+				if (aux->info.numeSofer) {
+					free(aux->info.numeSofer);
+				}
+				if (aux->info.model) {
+					free(aux->info.model);
+				}
+
+				free(aux); 
+			}
+			else {
+				//daca nu mai exista noduri cu seria cautata,
+				//iesim din bucla
+				p = NULL;
+			}
+		}
+	}
+	
 }
 
 float calculeazaPretulMasinilorUnuiSofer(Nod* cap, const char* numeSofer) {
@@ -178,5 +227,7 @@ int main() {
 	afisareListaMasini(cap);
 	printf("Pretul mediu este: %.2f\n", calculeazaPretMediu(cap));
 	printf("Pretul masinilor unui sofer este: %.2f\n", calculeazaPretulMasinilorUnuiSofer(cap, "Gheorghe"));
+	stergeMasiniDinSeria(&cap, 'A');
+	afisareListaMasini(cap);
 	return 0;
 }
