@@ -76,6 +76,92 @@ void adaugaStudentLaInceput(Nod** cap, Student studentNou) {
     *cap = nou; //nodul nou devine primul nod al listei
 }
 
+float calculeazaMedieGeneralaStudenti(Nod* cap) {
+    float suma = 0;
+    int nr = 0;//ne trebuie numarul de madii sa calc media generala
+
+    while (cap) { //echivalent cu while(cap!=NULL)
+        suma += cap->info.medie;
+        nr++;
+        cap = cap->next;
+    }
+
+    if (nr > 0) {
+        return suma / nr;
+    }
+    return 0;
+}
+
+float calculeazaMediaStudentilorDinFacultate(Nod* cap, const char* facultate) {
+    float suma = 0;
+    int nr = 0;
+
+    while (cap) {
+        if (strcmp(cap->info.facultate, facultate) == 0) {
+            //strcmp returneaza 0 cand sirurile sunt egale
+            suma += cap->info.medie;
+            nr++;
+        }
+        cap = cap->next;
+    }
+
+    if (nr > 0) {
+        return suma / nr;
+    }
+    return 0;
+}
+
+void stergeStudentiDinAnul(Nod** cap, char anCautat) {
+    //Nod** este adresa pointerului la primul nod, capul listei
+    //1. daca nodul cautat este la inceputul listei
+    while ((*cap) && (*cap)->info.an == anCautat) {
+        //(*cap) este primul nod din lista
+        //(*cap)->info.an este campul "an" sin primul nod
+        Nod* aux = *cap; //salvam adresa nodului care trebuie sters
+        *cap = aux->next; //mutam capul pe urmatorul nod
+
+        //eliberam memoria pt campurile alocate dinamic
+        free(aux->info.nume);
+        free(aux->info.facultate);
+        free(aux);  //eliberam nodul
+    }
+
+    //2. daca lista nu devine goala dupa prima stergere
+    if (*cap != NULL) {
+        Nod* p = *cap; // p = pointer de parcurgere
+
+        while (p != NULL) { //cautam primul nod care are next de sters
+            while (p->next != NULL && p->next->info.an != anCautat) {
+                p = p->next;
+            }
+
+            if (p->next != NULL) { //am gasit un nod care tb sters, p->next
+                Nod* aux = p->next; // aux este nodul care va fi sters
+                p->next = aux->next; //luam adresa urmatorului nod sa nu pierdem lista
+
+                //eliberam memoria si nodul aux
+                free(aux->info.nume);
+                free(aux->info.facultate);
+                free(aux);
+            }
+            else {
+                //in cazul acesta nu mai exista noduri
+                p = NULL;
+            }
+        }
+    }
+}
+
+void dezalocareListaStudenti(Nod** cap) {
+    while (*cap) {
+        Nod* p = *cap;
+        *cap = p->next;
+
+        free(p->info.nume);
+        free(p->info.facultate);
+        free(p);
+    }
+}
 
 
 int main() {
@@ -84,9 +170,20 @@ int main() {
     adaugaStudentInLista(&cap, initializareStudent(1, 20, 8.5f, "Ana", "CSIE", '1'));
     adaugaStudentInLista(&cap, initializareStudent(2, 21, 9.3f, "Mihai", "Cibernetica", '2'));
     adaugaStudentLaInceput(&cap, initializareStudent(3, 19, 7.9f, "Ioana", "CSIE", '1'));
+    adaugaStudentInLista(&cap, initializareStudent(4, 22, 6.8f, "Radu", "Marketing", '3'));
+    
+    afisareListaStudenti(cap);
+
+    printf("Media generala a studentilor este: %.2f\n", calculeazaMedieGeneralaStudenti(cap));
+
+    printf("Media studentilor de la CSIE este: %.2f\n", calculeazaMediaStudentilorDinFacultate(cap, "CSIE"));
+
+    printf("\nStergere studenti din anul 1:\n");
+    stergeStudentiDinAnul(&cap, '1');
 
     afisareListaStudenti(cap);
 
+    dezalocareListaStudenti(&cap);
 
     return 0;
 }
