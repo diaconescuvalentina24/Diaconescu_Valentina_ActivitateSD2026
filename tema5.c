@@ -104,7 +104,135 @@ void adaugaLaInceput(ListaDubla* lista, Melodie melodieNoua) {
     lista->nrNoduri++; //creste nr de noduri
 }
 
+
+void stergeMelodieDupaId(ListaDubla* lista, int id) {
+
+    //verificam daca lista este goala
+    if (lista->first == NULL) {
+        return;
+    }
+
+    Nod* p = lista->first; //incepem cautarea de la primul nod
+
+    //cautam melodia dupa id
+    while (p != NULL && p->info.id != id) {
+        p = p->next;
+    }
+
+    //nu am gasit melodia
+    if (p == NULL) {
+        return;
+    }
+
+    //actualizam primul nod
+    if (p->prev == NULL) {
+
+        lista->first = p->next;
+
+        if (lista->first != NULL) {
+            lista->first->prev = NULL;
+        }
+    }
+    else {
+        p->prev->next = p->next;
+    }
+
+    //actualizam ultimul nod
+    if (p->next == NULL) {
+        lista->last = p->prev;
+
+        if (lista->last != NULL) {
+            lista->last->next = NULL;
+        }
+    }
+    else {
+        p->next->prev = p->prev;
+    }
+
+    //eliberam memoria
+    if (p->info.titlu != NULL) {
+        free(p->info.titlu);
+    }
+
+    if (p->info.artist != NULL) {
+        free(p->info.artist);
+    }
+    free(p);
+
+    //actualizam numar noduri
+    lista->nrNoduri--;
+}
+
+char* getTitluMelodieCuNrMaximDescarcari(ListaDubla lista) {
+
+    //verificam lista goala
+    if (lista.first == NULL) {
+        return NULL;
+    }
+    Nod* max = lista.first;
+    Nod* p = lista.first->next;
+
+    //cautam melodia cu nr maxim de descarcari
+    while (p) {
+
+        if (p->info.nrDescarcari >
+            max->info.nrDescarcari) {
+            max = p;
+        }
+        p = p->next;
+    }
+
+    //alocam memorie + creare copie pentru titlu
+    char* titlu =(char*)malloc(strlen(max->info.titlu) + 1);
+    strcpy(titlu, max->info.titlu);
+    return titlu;
+}
+
+float calculeazaDurataMedie(ListaDubla lista) {
+
+    
+    if (lista.nrNoduri == 0) {
+        return 0;
+    }
+    int suma = 0;
+    Nod* p = lista.first;
+
+    //calculam suma pt durata
+    while (p) {
+        suma += p->info.durata;
+        p = p->next;
+    }
+    return (float)suma / lista.nrNoduri;
+
+}
+
+void dezalocareListaDubla(ListaDubla* lista) {
+
+    Nod* p = lista->first;
+
+    //parcurgem si eliberam memoria
+    while (p) {
+        Nod* aux = p;
+        p = p->next;
+
+        //se elibereaza campurile alocate dinamic
+        if (aux->info.titlu != NULL) {
+            free(aux->info.titlu);
+        }
+        if (aux->info.artist != NULL) {
+            free(aux->info.artist);
+        }
+        free(aux);
+    }
+
+    //resetam lista
+    lista->first = NULL;
+    lista->last = NULL;
+    lista->nrNoduri = 0;
+}
+
 int main() {
+
     ListaDubla lista;
     lista.first = NULL;
     lista.last = NULL;
@@ -120,6 +248,25 @@ int main() {
 
     printf("Afisare de la sfarsit:\n");
     afisareListaDeLaSfarsit(lista);
+
+    printf("Durata medie este:%.2f\n",
+        calculeazaDurataMedie(lista));
+
+    char* titluMax =getTitluMelodieCuNrMaximDescarcari(lista);
+
+    if (titluMax != NULL) {
+        printf(
+            "Melodia cu cele mai multe descarcari este:%s\n",titluMax);
+        free(titluMax);
+    }
+
+    printf("\nStergere melodie cu id 2:\n");
+    stergeMelodieDupaId(&lista, 2);
+    afisareListaDeLaInceput(lista);
+
+
+    dezalocareListaDubla(&lista);
+
 
     return 0;
 }
