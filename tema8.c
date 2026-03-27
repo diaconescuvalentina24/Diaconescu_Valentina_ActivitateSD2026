@@ -117,6 +117,75 @@ void afisareHashTable(HashTable tabela) {
 	}
 }
 
+int calculParticipantiPrimaLista(HashTable tabela) {
+
+	int total = 0;
+	//luam lista aflata pe prima pozitie din tabela
+	Nod* capLista0 = tabela.vector[0];
+
+	//parcurgem lista si adunam participantii
+	while (capLista0 != NULL) {
+		total += capLista0->info.nrParticipanti;
+		capLista0 = capLista0->next; //trecem la urmatorul nod din lista
+	}
+	return total;
+}
+
+void stergeConcurs(HashTable tabela,const char* denumire) {
+
+	for (int i = 0; i < tabela.dimensiune; i++) {
+
+		Nod* p = tabela.vector[i]; //pointer de parcurgere
+		//retinem nodul precedent pt a reface legaturile la stergere
+		Nod* anterior = NULL;
+
+		while (p != NULL && strcmp(p->info.denumire,denumire) != 0) {
+
+			anterior = p; //salvam nodul curent in anterior
+			p = p->next; //mutam p pana cand strcmp = 0
+		}
+
+		if (p != NULL) {
+
+			if (anterior == NULL) {//suntem la primul nod
+				tabela.vector[i] = p->next;
+			}
+			else {
+				//refacem legatura si sarim peste nodul care va fi sters
+				anterior->next = p->next;
+			}
+			free(p->info.denumire);
+			free(p);
+
+			return;
+		}
+	}
+}
+
+void dezalocareLista(Nod** cap) {
+
+	while ((*cap) != NULL) {
+
+		Nod* copie = *cap;
+		//mutam capul listei pe urmatorul nod
+		*cap = (*cap)->next;
+
+		free(copie->info.denumire);
+		free(copie);
+	}
+}
+
+void dezalocareHashTable(HashTable tabela) {
+
+	for (int i = 0; i < tabela.dimensiune; i++) {
+
+		//fiecare pozitie poate avea o lista separata
+		dezalocareLista(&(tabela.vector[i]));
+	}
+
+	free(tabela.vector);
+}
+
 int main() {
 
 	Nod* cap = NULL;
@@ -131,11 +200,19 @@ int main() {
 
 	HashTable tabela = initHashTable(4);
 
-	inserareHashTable(tabela, initConcurs("Ciclism", 67, 120.5f));
-	inserareHashTable(tabela, initConcurs("Maraton", 175, 80.0f));
+	inserareHashTable(tabela, initConcurs("Ciclism", 60, 120.5f));
+	inserareHashTable(tabela, initConcurs("Maraton", 75, 80.0f));
 	inserareHashTable(tabela, initConcurs("Inot", 400, 150.0f));
 
 	afisareHashTable(tabela);
+
+	printf("\nTotal participanti din prima lista: %d",calculParticipantiPrimaLista(tabela));
+	printf("\n\nDupa stergere:\n");
+
+	stergeConcurs(tabela,"Ciclism");
+	afisareHashTable(tabela);
+
+	dezalocareHashTable(tabela);
 
 	return 0;
 }
