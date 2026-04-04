@@ -45,7 +45,7 @@ HashTable initHashTable(int size) {
 	tabela.vector = (Nod**)malloc(sizeof(Nod*) * size);
 
 	for (int i = 0; i < size; i++) {
-		//la inceput toate pozitiile sunt null
+		//la inceput toate poz sunt null
 		tabela.vector[i] = NULL;
 	}
 
@@ -71,6 +71,8 @@ void afisareListaRetete(Nod* cap) {
 	}
 }
 
+
+
 void inserareLaSfarsit(Nod** cap, Reteta r) {
 
 	Nod* nou = (Nod*)malloc(sizeof(Nod));
@@ -91,7 +93,73 @@ void inserareLaSfarsit(Nod** cap, Reteta r) {
 	}
 }
 
+void inserareHashTable(HashTable tabela, Reteta r) {
 
+	if (tabela.dimensiune > 0) {
+
+		//calculam pozitia unde ar trebui pusa reteta
+		int pozitie = hash(tabela.dimensiune, r.nrIngrediente);
+
+		if (pozitie >= 0 && pozitie < tabela.dimensiune) {
+
+			//daca ajung mai multe retete pe aceeasi pozitie
+			//le pastram in lista de la acea pozitie
+			inserareLaSfarsit(&(tabela.vector[pozitie]), r);
+		}
+	}
+}
+
+void afisareHashTable(HashTable tabela) {
+
+	for (int i = 0; i < tabela.dimensiune; i++) {
+		printf("\n\nPozitie:%d", i);
+
+		//afisam lista formata pe pozitia curenta
+		afisareListaRetete(tabela.vector[i]);
+	}
+}
+
+float calculTimpPrimaLista(HashTable tabela) {
+
+	float total = 0;
+
+	//luam lista de pe pozitia 0
+	Nod* capLista0 = tabela.vector[0];
+
+	while (capLista0 != NULL) {
+		total += capLista0->info.timpPreparare;
+
+		//trecem la urmatoarea reteta din lista
+		capLista0 = capLista0->next;
+	}
+
+	return total;
+}
+
+void dezalocareLista(Nod** cap) {
+
+	while ((*cap) != NULL) {
+
+		Nod* copie = *cap;
+
+		//mutam capul inainte de free ca sa nu pierdem lista
+		*cap = (*cap)->next;
+
+		free(copie->info.denumire);
+		free(copie);
+	}
+}
+
+void dezalocareHashTable(HashTable tabela) {
+
+	for (int i = 0; i < tabela.dimensiune; i++) {
+
+		//fiecare pozitie poate avea propria lista
+		dezalocareLista(&(tabela.vector[i]));
+	}
+
+	free(tabela.vector);
+}
 
 
 int main() {
@@ -106,6 +174,19 @@ int main() {
 	printf("\nLista retete:");
 
 	afisareListaRetete(cap);
+
+	HashTable tabela = initHashTable(4);
+
+	inserareHashTable(tabela, initReteta("Paste carbonara", 6, 25.0f));
+	inserareHashTable(tabela, initReteta("Clatite", 5, 30.1f));
+	inserareHashTable(tabela, initReteta("Salata greceasca", 8, 15.5f));
+	inserareHashTable(tabela, initReteta("Omleta", 4, 10.0f));
+
+	afisareHashTable(tabela);
+
+	printf("\nTimp total pentru prima lista: %.2f",calculTimpPrimaLista(tabela));
+
+	dezalocareHashTable(tabela);
 
 
 	return 0;
