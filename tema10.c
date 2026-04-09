@@ -71,6 +71,31 @@ void adaugareFarmacieInLista(ListaDubla* lista, Farmacie farmacieNoua) {
 
 }
 
+void inversareListaDubla(ListaDubla* lista) {
+
+	Nod* p = lista->first;
+	Nod* temp = NULL;
+
+	//parcurgem toate nodurile si schimbam legaturile
+	while (p != NULL) {
+
+		//salvam fostul next
+		temp = p->next;
+
+		//inversam directiile
+		p->next = p->prev;
+		p->prev = temp;
+
+		//trecem la urmatorul nod din lista initiala
+		p = temp;
+	}
+
+	//schimbam intre ele inceputul si sfarsitul listei
+	temp = lista->first;
+	lista->first = lista->last;
+	lista->last = temp;
+}
+
 
 int main() {
 	ListaDubla lista;
@@ -86,6 +111,8 @@ int main() {
 	printf("\n-----Afisare lista de la inceput------\n");
 	afisareListaDeLaInceput(lista);
 
-
+	printf("\n------Lista inversata----------\n");
+	inversareListaDubla(&lista);
+	afisareListaDeLaInceput(lista);
 
 }
