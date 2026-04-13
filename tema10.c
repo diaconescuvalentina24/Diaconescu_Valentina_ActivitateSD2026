@@ -96,6 +96,69 @@ void inversareListaDubla(ListaDubla* lista) {
 	lista->last = temp;
 }
 
+int verificareListaCirculara(ListaDubla lista) {
+
+	//daca lista este goala nu o consideram circulara
+	if (lista.first == NULL || lista.last == NULL) {
+		return 0;
+	}
+	//verificam daca primul si ultimul nod sunt legate intre ele
+	if (lista.first->prev == lista.last && lista.last->next == lista.first) {
+		return 1;
+	}
+
+	return 0;
+}
+
+void stergeFarmacieDupaDenumire(ListaDubla* lista,const char* denumire) {
+
+	Nod* p = lista->first;
+
+	//cautam farmacia dupa denumire
+	while (p != NULL &&
+		strcmp(p->farmacie.denumire,denumire) != 0) {
+		p = p->next;
+	}
+
+	//daca farmacia nu exista iesim
+	if (p == NULL) {
+		return;
+	}
+
+	//daca stergem primul nod
+	if (p->prev == NULL) {
+		lista->first = p->next;
+
+		if (lista->first != NULL) {
+
+			//noul prim nod nu mai are element in stanga
+			lista->first->prev = NULL;
+		}
+	}
+	else {
+		//legam nodul anterior cu urmatorul
+		p->prev->next = p->next;
+	}
+
+	//daca stergem ultimul nod
+	if (p->next == NULL) {
+		lista->last = p->prev;
+
+		if (lista->last != NULL) {
+			//noul ultim nod nu mai are element in dreapta
+			lista->last->next = NULL;
+		}
+	}
+	else {
+		p->next->prev = p->prev;
+	}
+
+	free(p->farmacie.denumire);
+	free(p->farmacie.adresa);
+	free(p);
+
+	lista->nrNoduri--;
+}
 
 int main() {
 	ListaDubla lista;
@@ -114,5 +177,33 @@ int main() {
 	printf("\n------Lista inversata----------\n");
 	inversareListaDubla(&lista);
 	afisareListaDeLaInceput(lista);
+
+	printf("\n -------Lista dupa stergere-------\n");
+
+	stergeFarmacieDupaDenumire(&lista, "Dona");
+
+	afisareListaDeLaInceput(lista);
+
+	printf("\n------Verificare lista circulara------\n");
+
+	if (verificareListaCirculara(lista)) {
+		printf("Lista este circulara\n");
+	}
+	else {
+		printf("Lista nu este circulara\n");
+	}
+
+	//legam primul si ultimul nod
+	lista.first->prev = lista.last;
+	lista.last->next = lista.first;
+
+	printf("\n-------Dupa legare primul de ultimul nod-------\n");
+
+	if (verificareListaCirculara(lista)) {
+		printf("Lista este circulara\n");
+	}
+	else {
+		printf("Lista nu este circulara\n");
+	}
 
 }
