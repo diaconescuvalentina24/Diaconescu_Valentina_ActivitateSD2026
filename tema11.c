@@ -63,7 +63,6 @@ void inserareLaSfarsit(Nod** cap, Parfum p) {
 }
 
 void afisareListaParfumuri(Nod* cap) {
-	//parcurgem lista de la primul nod
 	while (cap != NULL) {
 		afisareParfum(cap->info);
 		cap = cap->next;
@@ -83,20 +82,98 @@ void dezalocareLista(Nod** cap) {
 	}
 }
 
+void inversareLista(Nod** cap) {
+
+	Nod* anterior = NULL;
+	Nod* curent = *cap;
+	Nod* urmator = NULL;
+
+	//refacem legaturile dintre noduri
+	while (curent != NULL) {
+
+		//salvam urmatorul nod
+		urmator = curent->next;
+
+		//intoarcem sageata spre stanga
+		curent->next = anterior;
+
+		anterior = curent;
+		curent = urmator;
+	}
+
+	//ultimul nod devine primul
+	*cap = anterior;
+}
+
+int esteListaCirculara(Nod* cap) {
+
+	//lista vida nu este considerata circulara
+	if (cap == NULL) {
+		return 0;
+	}
+
+	Nod* p = cap->next;
+
+	//mergem pana ajungem la final
+	//sau pana revenim la primul nod
+	while (p != NULL && p != cap) {
+
+		p = p->next;
+	}
+
+	if (p == cap) {
+		return 1;
+	}
+
+	return 0;
+}
+
 int main() {
 	Nod* cap = NULL;
 
-	//adaugam cateva parfumuri in lista
+	//adaugam parfumuri in lista
 	inserareLaSfarsit(&cap, initializareParfum("L'Homme", "Dior", 450.0f, 90));
 	inserareLaSfarsit(&cap, initializareParfum("Light Blue", "Dolce Gabanna", 520.5f, 80));
 	inserareLaSfarsit(&cap, initializareParfum("La Vie Est Belle", "Lancome", 390.0f, 75));
 
 	printf("\nLista parfumuri:");
-
 	//verificam daca parfumurile au fost inserate corect
 	afisareListaParfumuri(cap);
 
-	dezalocareLista(&cap);
+	printf("\n\nLista inversata:\n");
+
+	inversareLista(&cap);
+
+	afisareListaParfumuri(cap);
+
+	printf("\n\nVerificare lista circulara:\n");
+
+	if (esteListaCirculara(cap)) {
+		printf("Lista este circulara");
+	}
+	else {
+		printf("Lista nu este circulara");
+	}
+
+
+	//test pentru lista circulara
+	Nod* aux = cap;
+
+	while (aux->next != NULL) {
+		aux = aux->next;
+	}
+
+	//ultimul nod va indica spre primul
+	aux->next = cap;
+
+	printf("\nDupa legare:\n");
+
+	if (esteListaCirculara(cap)) {
+		printf("Lista este circulara");
+	}
+	else {
+		printf("Lista nu este circulara");
+	}
 
 	return 0;
 }
