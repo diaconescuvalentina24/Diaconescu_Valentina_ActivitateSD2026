@@ -83,18 +83,16 @@ void dezalocareLista(Nod** cap) {
 }
 
 void inversareLista(Nod** cap) {
-
 	Nod* anterior = NULL;
 	Nod* curent = *cap;
 	Nod* urmator = NULL;
 
 	//refacem legaturile dintre noduri
 	while (curent != NULL) {
-
 		//salvam urmatorul nod
 		urmator = curent->next;
 
-		//intoarcem sageata spre stanga
+		//intoarcem legatura spre stanga
 		curent->next = anterior;
 
 		anterior = curent;
@@ -106,7 +104,6 @@ void inversareLista(Nod** cap) {
 }
 
 int esteListaCirculara(Nod* cap) {
-
 	//lista vida nu este considerata circulara
 	if (cap == NULL) {
 		return 0;
@@ -114,10 +111,8 @@ int esteListaCirculara(Nod* cap) {
 
 	Nod* p = cap->next;
 
-	//mergem pana ajungem la final
-	//sau pana revenim la primul nod
+	//mergem pana ajungem la final sau pana revenim la primul nod
 	while (p != NULL && p != cap) {
-
 		p = p->next;
 	}
 
@@ -128,24 +123,74 @@ int esteListaCirculara(Nod* cap) {
 	return 0;
 }
 
+float calculPretMediu(Nod* cap) {
+	float suma = 0;
+	int nrParfumuri = 0;
+	Nod* p = cap;
+
+	//parcurgem toata lista
+	while (p != NULL) {
+		//adunam preturile parfumurilor
+		suma += p->info.pret;
+		nrParfumuri++;
+		p = p->next;
+	}
+
+	return suma / nrParfumuri;
+}
+
+float calculSumaBrand(Nod* cap,
+	const char* brand) {
+	float suma = 0;
+	Nod* p = cap;
+
+	//parcurgem toate parfumurile
+	while (p != NULL) {
+		//adunam doar parfumurile de la brandul cautat
+		if (strcmp(p->info.brand,
+			brand) == 0) {
+			suma += p->info.pret;
+		}
+		p = p->next;
+	}
+	return suma;
+}
+
+
+
+
+
 int main() {
 	Nod* cap = NULL;
 
 	//adaugam parfumuri in lista
 	inserareLaSfarsit(&cap, initializareParfum("L'Homme", "Dior", 450.0f, 90));
 	inserareLaSfarsit(&cap, initializareParfum("Light Blue", "Dolce Gabanna", 520.5f, 80));
+	inserareLaSfarsit(&cap, initializareParfum("Light Blue Men", "Dolce Gabanna", 120.5f, 80));
 	inserareLaSfarsit(&cap, initializareParfum("La Vie Est Belle", "Lancome", 390.0f, 75));
 
 	printf("\nLista parfumuri:");
 	//verificam daca parfumurile au fost inserate corect
 	afisareListaParfumuri(cap);
 
+	float pretMediu =
+		calculPretMediu(cap);
+
+	float sumaBrand =
+		calculSumaBrand(
+			cap,
+			"Dolce Gabanna");
+
+	printf(
+		"\n\nSuma parfumurilor de la Dolce Gabanna: %.2f",
+		sumaBrand);
+
+	printf("\n\nPret mediu: %.2f",
+		pretMediu);
+
 	printf("\n\nLista inversata:\n");
-
 	inversareLista(&cap);
-
 	afisareListaParfumuri(cap);
-
 	printf("\n\nVerificare lista circulara:\n");
 
 	if (esteListaCirculara(cap)) {
@@ -155,10 +200,8 @@ int main() {
 		printf("Lista nu este circulara");
 	}
 
-
 	//test pentru lista circulara
 	Nod* aux = cap;
-
 	while (aux->next != NULL) {
 		aux = aux->next;
 	}
@@ -167,7 +210,6 @@ int main() {
 	aux->next = cap;
 
 	printf("\nDupa legare:\n");
-
 	if (esteListaCirculara(cap)) {
 		printf("Lista este circulara");
 	}
