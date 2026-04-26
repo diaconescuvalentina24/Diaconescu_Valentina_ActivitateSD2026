@@ -44,6 +44,30 @@ Avion initAvion(int nrLocuri,
 	return a;
 }
 
+Avion citireAvionDinFisier(FILE* file) {
+	Avion a;
+
+	char buffer[100];
+	char sep[3] = ",\n";
+	char* aux;
+
+	fgets(buffer, 100, file);
+	aux = strtok(buffer, sep);
+	a.nrLocuri = atoi(aux);
+
+	aux = strtok(NULL, sep);
+	a.pretBilet = atof(aux);
+
+	aux = strtok(NULL, sep);
+	a.pilot = malloc(strlen(aux) + 1);
+	strcpy(a.pilot, aux);
+
+
+
+	a.tipLoc = *strtok(NULL, sep);
+
+	return a;
+}
 
 //adaugare nod in arbore
 void adaugaAvionInArbore(Nod** rad, Avion a) {
@@ -65,6 +89,22 @@ void adaugaAvionInArbore(Nod** rad, Avion a) {
 
 }
 
+Nod* citireArboreAvioaneDinFisier(const char* numeFis) {
+
+	Nod* rad = NULL;
+	FILE* f = fopen(numeFis, "r");
+	//printf("hello0");
+	if (f) {
+		//printf("hello1");
+		while (!(feof(f))) {
+			//printf("hello2");
+			Avion a = citireAvionDinFisier(f);
+			adaugaAvionInArbore(&rad, a);
+		}
+		fclose(f);
+	}
+	return rad;
+}
 
 //in ordine
 void afisareArboreAvioane(Nod* rad) {
@@ -76,6 +116,42 @@ void afisareArboreAvioane(Nod* rad) {
 
 }
 
+Avion getAvionByNumePilot(Nod* rad, const char* numePilot) {
+	Avion a;
+	//a.nrLocuri = -1;
+	a.pilot = "";
+
+	if (rad) {
+		if (strcmp(rad->info.pilot, numePilot) == 0) {
+			a = rad->info;
+			a.pilot = malloc(sizeof(strlen(rad->info.pilot) + 1));
+			strcpy(a.pilot, numePilot);
+		}
+		Avion avionulDinSubarboreleStang = getAvionByNumePilot(rad->stg, numePilot);
+		Avion avionulDinSubarboreleDrept = getAvionByNumePilot(rad->dr, numePilot);
+
+		if (strcmp(avionulDinSubarboreleStang.pilot, numePilot) == 0) {
+			return avionulDinSubarboreleStang;
+		}
+
+		if (strcmp(avionulDinSubarboreleDrept.pilot, numePilot) == 0) {
+			return avionulDinSubarboreleDrept;
+		}
+	}
+
+	return a;
+
+}
+
+void dezalocareArboreDeAvioane(Nod** rad) {
+	if (*rad) {
+		dezalocareArboreDeAvioane(&(*rad)->stg);
+		dezalocareArboreDeAvioane(&(*rad)->dr);
+		free((*rad)->info.pilot);
+		free(*rad);
+		*rad = NULL;
+	}
+}
 
 
 
@@ -92,5 +168,15 @@ int main() {
 
 	afisareArboreAvioane(rad);
 
+	rad = citireArboreAvioaneDinFisier("avioane.txt");
+	printf("\n---Afisare din fisier---\n");
+	afisareArboreAvioane(rad);
+
+	Avion x = getAvionByNumePilot(rad, "Popescu Ion");
+	printf("Cauta avion dupa nume pilot\n");
+	afisareAvion(x);
+
+
+	dezalocareArboreDeAvioane(&rad);
 	return 0;
 }
