@@ -77,7 +77,6 @@ void afisarePreordine(Nod* rad) {
 }
 
 void dezalocareArbore(Nod** rad) {
-
 	if (*rad) {
 
 		dezalocareArbore(&((*rad)->st));
@@ -87,6 +86,58 @@ void dezalocareArbore(Nod** rad) {
 		free(*rad);
 
 		*rad = NULL;
+	}
+}
+
+void inversareArbore(Nod* rad) {
+	if (rad) {
+		Nod* aux = rad->st;
+
+		//schimbam subarborele stang cu cel drept
+		rad->st = rad->dr;
+		rad->dr = aux;
+
+		//continuam inversarea si pentru copii
+		inversareArbore(rad->st);
+		inversareArbore(rad->dr);
+	}
+}
+
+int maxim(int a, int b) {
+	return (a > b ? a : b);
+}
+
+int calculeazaInaltime(Nod* rad) {
+	if (rad) {
+
+		return maxim(
+			calculeazaInaltime(rad->st),
+			calculeazaInaltime(rad->dr)) + 1;
+	}
+
+	return 0;
+}
+
+void afisareNivel(Nod* rad, int nivel) {
+	if (rad) {
+		if (nivel == 1) {
+			afisareTableta(rad->info);
+		}
+		else {
+			//scadem nivelul pana ajungem la nivelul cautat
+			afisareNivel(rad->st, nivel - 1);
+			afisareNivel(rad->dr, nivel - 1);
+		}
+	}
+}
+
+void afisarePeNivele(Nod* rad) {
+	int h = calculeazaInaltime(rad);
+
+	//afisam fiecare nivel pe rand
+	for (int i = 1; i <= h; i++) {
+		printf("\nNivel %d:", i);
+		afisareNivel(rad, i);
 	}
 }
 
@@ -102,6 +153,15 @@ int main() {
 
 	printf("\nAfisare preordine:");
 	afisarePreordine(rad);
+
+	printf("\nAfisare pe nivele:");
+	afisarePeNivele(rad);
+
+	printf("\nArbore inversat:");
+	inversareArbore(rad);
+
+	printf("\nAfisare pe nivele dupa inversare:");
+	afisarePeNivele(rad);
 
 	dezalocareArbore(&rad);
 
